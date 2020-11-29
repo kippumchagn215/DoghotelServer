@@ -163,7 +163,7 @@ app.get("/logout", function (req, res) {
   res.redirect("https://quirky-lamarr-a016e1.netlify.app/"); // it works only when you redirect to home page but why?
 });
 
-app.post("/login", function (req, res, next) {
+app.post("/api/login", function (req, res, next) {
   const user = new User({
     username: req.body.username,
     password: req.body.password,
