@@ -1,0 +1,284 @@
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const mongodb = require('mongodb');
+const bodyParser = require('body-parser');
+const ejs = require("ejs");
+
+const session = require('express-session'); // 3 pacakge needed to authenticate and serialize and deserialize users
+const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
+
+const GoogleStrategy = require('passport-google-oauth20').Strategy; // to let user login using google account
+const findOrCreate = require('mongoose-findorcreate');
+require('dotenv').config(); // to use .env file for protection of user info
+
+const app = express();
+app.use(bodyParser.urlencoded({extended:true}));
+
+// view engine setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'jade');
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(cors());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret:"Sentence to serialize the password",
+  resave:false,
+  saveUninitialized:false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+mongoose.connect('mongodb://localhost:27017/doghotelDB',{
+useUnifiedTopology: true,
+useNewUrlParser: true,
+useCreateIndex: true
+});
+
+
+// Schemas
+const bookingSchema = new mongoose.Schema({
+      room: String,
+      Date:String,
+      Fname: String,
+      Lname:String,
+      Address1:String,
+      Address2:String,
+      Payment:String,
+      Cardname:String,
+      Creditnum:Number,
+      Exp:String,
+      Cvv:Number,
+      Startdate: String,
+      Enddate: String,
+      numofdays: Number,
+      totalprice: Number,
+      description: [],
+})
+const userSchema = new mongoose.Schema({
+  email: String,
+  pw:String,
+  lname:String,
+  fname:String,
+  booking:[bookingSchema]
+});
+
+// order schema,plugin,models,use,serialize,deserialize
+
+
+userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate); // to use find or create plug in to user schema
+const Booking = new mongoose.model("Booking",bookingSchema); // interface to user mongo db, not the list itself
+const User = new mongoose.model("User",userSchema);
+passport.use(User.createStrategy());
+
+passport.serializeUser(User.serializeUser()); // when using with passport-local, it will take care of extra code.
+passport.deserializeUser(User.deserializeUser());
+
+passport.use(new GoogleStrategy({ // to use google auth method
+    clientID: process.env.CLIENT_ID, // access ID and SECRET in .env file
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:4000/auth/google/Doghotel", // callback url you wrote on google APIS credential
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo" // do I need this line still?
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) { // not a function provided by mongo but by using "mongoose-findorcreate"  you can actually use findorcreate function
+      return cb(err, user);
+    });
+  }
+));
+
+
+//functions
+
+
+
+// Pages
+app.get("/test",function(req,res){ // testing page
+  // res.send("hm working");
+  console.log(req.user);
+  if(req.isAuthenticated()){
+    res.send("true");
+  }else{
+    res.send("false");
+  }
+})
+
+app.post("/yourbooking",function(req,res){
+  User.findById(req.user._id,function(err,founduser){
+    if(err){res.send("Error occured")}
+    else{
+      res.json(founduser);
+    }
+  });
+})
+
+
+
+
+app.post('/checkout',function(req,res){
+  const userinfo = req.user;
+  const confirminfo = req.body;
+  console.log(confirminfo);
+  User.findOne({username:userinfo.username},function(err,founduser){
+    if(err){res.send("error occured while saving");}
+    else{
+      res.send("successfully added booking");
+      founduser.booking.push(confirminfo);
+      founduser.save();
+    }
+  })
+})
+
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/'); // it works only when you redirect to home page but why?
+});
+
+
+app.post("/login",function(req,res,next){ // login handling
+  // console.log(req.body);
+  const user = new User({
+    username:req.body.username,
+    password:req.body.password
+  });
+  req.login(user,function(err){
+    if(err){console.log(err);} // error while trying to login
+    else{
+      passport.authenticate('local', function(err, user, info) {
+    if (err) {
+      return next(err); // will generate a 500 error
+    }
+    // Generate a JSON response reflecting authentication status
+    if (! user) {
+      return res.send(false);
+    }
+    req.login(user, loginErr => {
+      if (loginErr) {
+        return next(loginErr);
+      }
+      return res.send(true);
+    });
+  })(req, res, next); // what does this do?
+    }
+  })
+});
+
+
+
+app.get("/signup",function(req,res){//Signup handling
+  User.find({},function(err,found){
+    res.json(found);
+  });
+
+})
+
+app.post("/signup",function(req,res){
+  const userinfo = req.body;
+  const new_user = new User({ // to use passport to authenticate user username and password attr is needed,the object passed in from react also needs username and password att
+    username: userinfo.username,
+    password: userinfo.password,
+    lname:userinfo.lname,
+    fname:userinfo.fname
+  })
+  User.register(new_user,userinfo.password,function(err,user){
+    if(err){console.log(err);}
+    else{
+      passport.authenticate("local")(req,res,function(){
+        res.send("successfully inserted")
+      })
+    }
+  })
+//
+// User.findOne({email: new_user.email},function(err,founduser){
+//     if(!err){
+//       if(founduser){res.send("user already exist");}
+//       else{new_user.save();res.send("successfully added to db");}
+//     }
+//   });
+//   console.log(userinfo);
+})
+
+app.get("/auth/google",passport.authenticate("google",{scope:["profile"]})) // using google auth method we set up above, identify the user using profile which includes id and email)
+app.get('/auth/google/Doghotel',
+  passport.authenticate('google', ),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const apiRouter = require('./routes/api');
+
+
+
+
+
+
+
+
+
+
+
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/api',apiRouter);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+module.exports = app;
