@@ -8,7 +8,7 @@ const mongodb = require("mongodb");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const cors = require("cors");
-
+const MongoStore = require("connect-mongo")(session);
 const session = require("express-session"); // 3 pacakge needed to authenticate and serialize and deserialize users
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
@@ -37,6 +37,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: true,
+    store: new MongoStore({
+      url: config.urlMongo,
+      collection: "sessions",
+    }),
   })
 );
 app.use(passport.initialize());
