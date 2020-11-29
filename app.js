@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const MongoStore = require("connect-mongostore")(express);
+const MongoStore = require("connect-mongostore");
 const cors = require("cors");
 
 const session = require("express-session"); // 3 pacakge needed to authenticate and serialize and deserialize users
