@@ -30,11 +30,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.enable("trust proxy");
 app.use(
   session({
     secret: process.env.CLIENT_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
   })
 );
 app.use(passport.initialize());
@@ -166,13 +168,35 @@ app.get("/logout", function (req, res) {
   res.redirect("https://quirky-lamarr-a016e1.netlify.app/"); // it works only when you redirect to home page but why?
 });
 
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-  })
-);
+app.post("/login", function (req, res, next) {
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password,
+  });
+  req.login(user, function (err) {
+    if (err) {
+      console.log(err);
+    } // error while trying to login
+    else {
+      passport.authenticate("local", function (err, user, info) {
+        // if the local auth method fails it will return 401 error, so to prevent custom error handling methods is needed.
+        if (err) {
+          return next(err); // will generate a 500 error
+        }
+        //
+        if (!user) {
+          return res.send(false);
+        }
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            return next(loginErr);
+          }
+          return res.send(true);
+        });
+      })(req, res, next); // what does this do?
+    }
+  });
+});
 
 app.get("/signup", function (req, res) {
   //Signup handling
