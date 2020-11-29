@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const cors = require("cors");
 
 const session = require("express-session"); // 3 pacakge needed to authenticate and serialize and deserialize users
 const passport = require("passport");
@@ -38,6 +39,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors());
 mongoose.connect(
   "mongodb+srv://admin-kippum:family3wkd@cluster0.egq2i.mongodb.net/doghotelDB",
   {
@@ -163,7 +165,7 @@ app.get("/logout", function (req, res) {
   res.redirect("https://quirky-lamarr-a016e1.netlify.app/"); // it works only when you redirect to home page but why?
 });
 
-app.post("/api/login", function (req, res, next) {
+app.post("/login", function (req, res, next) {
   const user = new User({
     username: req.body.username,
     password: req.body.password,
