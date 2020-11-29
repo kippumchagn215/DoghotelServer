@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "body-parser": "^1.19.0",
+    "config": "^3.3.3",
     "connect-mongo": "^3.2.0",
     "connect-mongostore": "^0.1.4",
     "cookie-parser": "~1.4.4",
