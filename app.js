@@ -136,7 +136,9 @@ app.get("/test", function (req, res) {
 });
 
 app.post("/yourbooking", function (req, res) {
+  console.log("received");
   User.findById(req.user._id, function (err, founduser) {
+    console.log(err);
     if (err) {
       res.send("Error occured");
     } else {
