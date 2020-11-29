@@ -37,6 +37,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: true,
+    cookie: {
+      secure: true,
+      maxAge: 3600000,
+      store: new MongoStore({ url: config.DB_URL }),
+    },
   })
 );
 app.use(passport.initialize());
