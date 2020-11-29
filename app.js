@@ -171,26 +171,32 @@ app.post("/login", function (req, res, next) {
     username: req.body.username,
     password: req.body.password,
   });
-
-  passport.authenticate("local", function (err, user, info) {
-    // if the local auth method fails it will return 401 error, so to prevent custom error handling methods is needed.
+  req.login(user, function (err) {
     if (err) {
-      return next(err); // will generate a 500 error
+      console.log(err);
+    } // error while trying to login
+    else {
+      passport.authenticate("local", function (err, user, info) {
+        // if the local auth method fails it will return 401 error, so to prevent custom error handling methods is needed.
+        if (err) {
+          return next(err); // will generate a 500 error
+        }
+        //
+        if (!user) {
+          return res.send(false);
+        }
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            return next(loginErr);
+          }
+          return res.send(true);
+        });
+      })(req, res, next); // what does this do?
     }
-    //
-    if (!user) {
-      return res.send(false);
-    }
-    req.login(user, (loginErr) => {
-      if (loginErr) {
-        return next(loginErr);
-      }
-      return res.send(true);
-    });
-  })(req, res, next); // what does this do?
+  });
 });
 
-app.get("https://damp-thicket-92600.herokuapp.com/signup", function (req, res) {
+app.get("/signup", function (req, res) {
   //Signup handling
   User.find({}, function (err, found) {
     res.json(found);
