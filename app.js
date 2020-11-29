@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const MongoStore = require("connect-mongostore");
 const cors = require("cors");
 
 const session = require("express-session"); // 3 pacakge needed to authenticate and serialize and deserialize users
@@ -38,11 +37,6 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: true,
-    cookie: {
-      secure: true,
-      maxAge: 3600000,
-      store: new MongoStore({ url: config.DB_URL }),
-    },
   })
 );
 app.use(passport.initialize());
