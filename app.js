@@ -38,10 +38,6 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: true,
-    store: new MongoStore({
-      url: config.urlMongo,
-      collection: "sessions",
-    }),
   })
 );
 app.use(passport.initialize());
