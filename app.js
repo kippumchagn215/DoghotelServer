@@ -107,7 +107,7 @@ passport.use(
       clientID: process.env.CLIENT_ID, // access ID and SECRET in .env file
       clientSecret: process.env.CLIENT_SECRET,
       callbackURL:
-        "https://young-sierra-64157.herokuapp.com/auth/google/Doghotel", // callback url you wrote on google APIS credential
+        "https://damp-thicket-92600.herokuapp.com/auth/google/Doghotel", // callback url you wrote on google APIS credential
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo", // do I need this line still?
     },
     function (accessToken, refreshToken, profile, cb) {
