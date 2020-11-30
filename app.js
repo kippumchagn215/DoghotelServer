@@ -19,6 +19,7 @@ const findOrCreate = require("mongoose-findorcreate");
 require("dotenv").config(); // to use .env file for protection of user info
 
 const app = express();
+
 app.use(bodyParser.urlencoded({ extended: true }));
 // ** MIDDLEWARE ** //
 
@@ -45,7 +46,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 mongoose.connect(
   "mongodb+srv://admin-kippum:family3wkd@cluster0.egq2i.mongodb.net/doghotelDB",
   {
