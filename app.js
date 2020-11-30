@@ -37,6 +37,8 @@ app.use(
     saveUninitialized: false,
     proxy: true,
     cookie: {
+      path: "/",
+      secure: false,
       httpOnly: true,
     },
   })
