@@ -46,12 +46,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(
-  cors({
-    credentials: true,
-    origin: "https://quirky-lamarr-a016e1.netlify.app",
-  })
-);
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 mongoose.connect(
   "mongodb+srv://admin-kippum:family3wkd@cluster0.egq2i.mongodb.net/doghotelDB",
   {
