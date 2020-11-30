@@ -189,6 +189,7 @@ app.get("/logout", function (req, res) {
 });
 
 app.post("/login", function (req, res, next) {
+  console.log(req.cookies);
   const user = new User({
     username: req.body.username,
     password: req.body.password,
