@@ -1,25 +1,24 @@
 const createError = require("http-errors");
-const config = require("config");
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const cors = require("cors");
+
 const session = require("express-session"); // 3 pacakge needed to authenticate and serialize and deserialize users
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
-const MongoStore = require("connect-mongo")(session);
+
 const GoogleStrategy = require("passport-google-oauth20").Strategy; // to let user login using google account
 const findOrCreate = require("mongoose-findorcreate");
 require("dotenv").config(); // to use .env file for protection of user info
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
-// ** MIDDLEWARE ** //
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -27,6 +26,7 @@ app.set("view engine", "jade");
 
 app.use(logger("dev"));
 app.use(express.json());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
@@ -42,9 +42,6 @@ app.use(
     },
   })
 );
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Origin", req.headers.origin);
@@ -55,11 +52,11 @@ app.use(function (req, res, next) {
   );
   next();
 });
+app.use(passport.initialize());
+app.use(passport.session());
 mongoose.connect(
   "mongodb+srv://admin-kippum:family3wkd@cluster0.egq2i.mongodb.net/doghotelDB",
   {
-    // to connect straight to atlas instead of local mongodb have to swith to this from 27017.
-    // to use atlas first need to set up cluster, and set up user ,(login using termianl), press connect, connect your application, and copy and paster url here.
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -123,13 +120,12 @@ passport.use(
       // to use google auth method
       clientID: process.env.CLIENT_ID, // access ID and SECRET in .env file
       clientSecret: process.env.CLIENT_SECRET,
-      callbackURL:
-        "https://damp-thicket-92600.herokuapp.com/auth/google/Doghotel", // callback url you wrote on google APIS credential
+      callbackURL: "http://localhost:4000/auth/google/Doghotel", // callback url you wrote on google APIS credential
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo", // do I need this line still?
     },
     function (accessToken, refreshToken, profile, cb) {
-      console.log("client id is " + process.env.CLIENT_ID);
       console.log(profile);
+      g;
       User.findOrCreate({ googleId: profile.id }, function (err, user) {
         // not a function provided by mongo but by using "mongoose-findorcreate"  you can actually use findorcreate function
         // if the user with that specific googleId doesn't exist create one, why is it only creating attr for booking, seems like its creating only if its array attr.
@@ -139,8 +135,9 @@ passport.use(
   )
 );
 
-// Pages
+//functions
 
+// Pages
 app.get("/test", function (req, res) {
   if (req.isAuthenticated()) {
     console.log("true");
@@ -152,7 +149,6 @@ app.get("/test", function (req, res) {
 });
 
 app.post("/yourbooking", function (req, res) {
-  console.log("received");
   User.findById(req.user._id, function (err, founduser) {
     if (err) {
       res.send("Error occured");
@@ -183,6 +179,10 @@ app.get("/logout", function (req, res) {
 });
 
 app.post("/login", function (req, res, next) {
+  console.log(req.body);
+  console.log("login");
+  // login handling
+  // console.log(req.body);
   const user = new User({
     username: req.body.username,
     password: req.body.password,
@@ -237,6 +237,14 @@ app.post("/signup", function (req, res) {
       });
     }
   });
+  //
+  // User.findOne({email: new_user.email},function(err,founduser){
+  //     if(!err){
+  //       if(founduser){res.send("user already exist");}
+  //       else{new_user.save();res.send("successfully added to db");}
+  //     }
+  //   });
+  //   console.log(userinfo);
 });
 
 app.get(
@@ -246,11 +254,11 @@ app.get(
 app.get(
   "/auth/google/Doghotel", // unlike using local auth method this method only doesn't follow user schema, it only create google id attr
   passport.authenticate("google", {
-    failureRedirect: "https://quirky-lamarr-a016e1.netlify.app/signin",
+    failureRedirect: "http://localhost:3000/signin",
   }),
   function (req, res) {
     // Successful authentication, redirect home
-    res.redirect("https://quirky-lamarr-a016e1.netlify.app/googleauth");
+    res.redirect("http://localhost:3000/googleauth");
   }
 );
 
@@ -277,4 +285,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+
 module.exports = app;
