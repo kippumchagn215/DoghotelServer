@@ -40,7 +40,6 @@ app.use(
       path: "/",
       secure: false,
       domain: ".netlify.app",
-      httpOnly: true,
     },
   })
 );
