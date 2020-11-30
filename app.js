@@ -38,8 +38,8 @@ app.use(
     proxy: true,
     cookie: {
       path: "/",
-      secure: false,
       domain: ".netlify.app",
+      httpOnly: true,
     },
   })
 );
