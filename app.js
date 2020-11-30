@@ -42,6 +42,10 @@ app.use(
       secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
+    store: new MongoStore({
+      url: config.urlMongo,
+      collection: "sessions",
+    }),
   })
 );
 app.use(passport.initialize());
