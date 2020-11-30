@@ -170,7 +170,7 @@ app.post("/checkout", function (req, res) {
 
 app.get("/logout", function (req, res) {
   req.logout();
-  res.redirect("https://quirky-lamarr-a016e1.netlify.app/"); // it works only when you redirect to home page but why?
+  res.redirect("/"); // it works only when you redirect to home page but why?
 });
 
 app.post("/login", function (req, res, next) {
