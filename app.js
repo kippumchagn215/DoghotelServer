@@ -20,7 +20,7 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: "https://quirky-lamarr-a016e1.netlify.app",
+    origin: "http://localhost:3000",
   })
 );
 // app.use(function (req, res, next) {
