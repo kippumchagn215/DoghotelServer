@@ -39,7 +39,7 @@ app.use(
     cookie: {
       path: "/",
       secure: false,
-      domain: ".herokuapp.com",
+      domain: ".netlify.app",
       httpOnly: true,
     },
   })
