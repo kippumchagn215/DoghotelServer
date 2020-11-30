@@ -39,6 +39,7 @@ app.use(
     cookie: {
       path: "/",
       secure: false,
+      domain: ".herokuapp.com",
       httpOnly: true,
     },
   })
