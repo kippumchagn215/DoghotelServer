@@ -13,13 +13,21 @@ const session = require("express-session"); // 3 pacakge needed to authenticate 
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const MongoStore = require("connect-mongo")(session);
-
 const GoogleStrategy = require("passport-google-oauth20").Strategy; // to let user login using google account
 const findOrCreate = require("mongoose-findorcreate");
 require("dotenv").config(); // to use .env file for protection of user info
 
 const app = express();
-
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
 app.use(bodyParser.urlencoded({ extended: true }));
 // ** MIDDLEWARE ** //
 
