@@ -39,7 +39,6 @@ app.use(
     cookie: {
       path: "/",
       secure: true,
-      domain: ".netlify.app",
       httpOnly: true,
     },
   })
