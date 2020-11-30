@@ -38,6 +38,7 @@ app.use(
     proxy: true,
     cookie: {
       path: "/",
+      secure: true,
       domain: ".netlify.app",
       httpOnly: true,
     },
