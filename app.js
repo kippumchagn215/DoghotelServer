@@ -48,7 +48,7 @@ app.use(passport.session());
 app.use(
   cors({
     credentials: true,
-    origin: "https://quirky-lamarr-a016e1.netlify.app/signin",
+    origin: "https://quirky-lamarr-a016e1.netlify.app",
   })
 );
 app.use(function (req, res, next) {
