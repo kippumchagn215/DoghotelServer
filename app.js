@@ -17,25 +17,6 @@ const findOrCreate = require("mongoose-findorcreate");
 require("dotenv").config(); // to use .env file for protection of user info
 
 const app = express();
-app.use(
-  cors({
-    credentials: true,
-    origin: "http://localhost:3000",
-  })
-);
-// app.use(function (req, res, next) {
-//   res.header("Access-Control-Allow-Credentials", true);
-//   res.header(
-//     "Access-Control-Allow-Origin",
-//     "https://quirky-lamarr-a016e1.netlify.app"
-//   );
-//   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-//   );
-//   next();
-// });
 app.use(bodyParser.urlencoded({ extended: true }));
 // ** MIDDLEWARE ** //
 
@@ -57,14 +38,24 @@ app.use(
     proxy: true,
     cookie: {
       path: "/",
-      secure: true,
+      secure: false,
       httpOnly: true,
     },
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
 mongoose.connect(
   "mongodb+srv://admin-kippum:family3wkd@cluster0.egq2i.mongodb.net/doghotelDB",
   {
@@ -162,21 +153,20 @@ app.get("/test", function (req, res) {
 });
 
 app.post("/yourbooking", function (req, res) {
-  console.log("received");
-  User.findById(req.user._id, function (err, founduser) {
+  User.findOne({ username: req.body.email }, function (err, founduser) {
     if (err) {
       res.send("Error occured");
     } else {
+      console.log(founduser);
       res.json(founduser);
     }
   });
 });
 
 app.post("/checkout", function (req, res) {
-  const userinfo = req.user;
   const confirminfo = req.body;
   console.log(confirminfo);
-  User.findOne({ username: userinfo.username }, function (err, founduser) {
+  User.findOne({ username: confirminfo.Email }, function (err, founduser) {
     if (err) {
       res.send("error occured while saving");
     } else {
@@ -193,7 +183,6 @@ app.get("/logout", function (req, res) {
 });
 
 app.post("/login", function (req, res, next) {
-  console.log(req.cookies);
   const user = new User({
     username: req.body.username,
     password: req.body.password,
