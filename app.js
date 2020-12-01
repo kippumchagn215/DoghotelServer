@@ -45,7 +45,12 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(
+  cors({
+    credentials: true,
+    origin: "https://quirky-lamarr-a016e1.netlify.app/signin",
+  })
+);
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Origin", req.headers.origin);
