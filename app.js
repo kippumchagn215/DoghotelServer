@@ -18,7 +18,6 @@ require("dotenv").config(); // to use .env file for protection of user info
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
-// ** MIDDLEWARE ** //
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
